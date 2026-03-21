@@ -254,140 +254,146 @@ export const ProjectsSection = forwardRef(
         const inView = useInView(innerRef, { once: true, margin: '-60px' });
 
         return (
-            <section ref={ref} className="projects-section py-28 relative z-10">
-                <div className="projects-grid-bg" />
-                <div className="projects-noise" />
+			<section ref={ref} className="projects-section py-28 relative z-10">
+				<div className="projects-grid-bg" />
+				<div className="projects-noise" />
 
-                {/* Top glow */}
-                <div
-                    className="absolute pointer-events-none"
-                    style={{
-                        top: '-100px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '700px',
-                        height: '350px',
-                        background:
-                            'radial-gradient(ellipse, rgba(192,132,252,0.06) 0%, transparent 70%)',
-                    }}
-                />
+				{/* Top glow */}
+				<div
+					className="absolute pointer-events-none"
+					style={{
+						top: '-100px',
+						left: '50%',
+						transform: 'translateX(-50%)',
+						width: '700px',
+						height: '350px',
+						background:
+							'radial-gradient(ellipse, rgba(192,132,252,0.06) 0%, transparent 70%)',
+					}}
+				/>
 
-                <div className="max-w-6xl mx-auto px-6 relative z-10" ref={innerRef}>
-                    {/* ── Header ── */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 24 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                        className="text-center mb-16"
-                    >
-                        <div className="inline-flex items-center gap-2 mb-5">
-                            <div
-                                className="h-px w-10"
-                                style={{
-                                    background: 'linear-gradient(90deg, transparent, #c084fc)',
-                                }}
-                            />
-                            <span
-                                style={{
-                                    fontFamily: "'DM Mono', monospace",
-                                    fontSize: '10px',
-                                    letterSpacing: '0.25em',
-                                    color: '#c084fc',
-                                    textTransform: 'uppercase',
-                                }}
-                            >
-                                Selected Work
-                            </span>
-                            <div
-                                className="h-px w-10"
-                                style={{
-                                    background: 'linear-gradient(90deg, #c084fc, transparent)',
-                                }}
-                            />
-                        </div>
+				<div
+					className="max-w-6xl mx-auto px-6 relative z-10"
+					ref={innerRef}
+				>
+					{/* ── Header ── */}
+					<motion.div
+						initial={{ opacity: 0, y: 24 }}
+						animate={inView ? { opacity: 1, y: 0 } : {}}
+						transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+						className="text-center mb-16"
+					>
+						<div className="inline-flex items-center gap-2 mb-5">
+							<div
+								className="h-px w-10"
+								style={{
+									background:
+										'linear-gradient(90deg, transparent, #c084fc)',
+								}}
+							/>
+							<span
+								style={{
+									fontFamily: "'DM Mono', monospace",
+									fontSize: '10px',
+									letterSpacing: '0.25em',
+									color: '#c084fc',
+									textTransform: 'uppercase',
+								}}
+							>
+								Selected Work
+							</span>
+							<div
+								className="h-px w-10"
+								style={{
+									background:
+										'linear-gradient(90deg, #c084fc, transparent)',
+								}}
+							/>
+						</div>
 
-                        <h2
-                            className="font-extrabold text-white mb-4"
-                            style={{
-                                fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-                                letterSpacing: '-0.03em',
-                                lineHeight: 1.1,
-                            }}
-                        >
-                            Projects &{' '}
-                            <span
-                                style={{
-                                    background: 'linear-gradient(135deg, #c084fc, #818cf8)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
-                                }}
-                            >
-                                Case Studies
-                            </span>
-                        </h2>
+						<h2
+							className="font-extrabold text-white mb-4"
+							style={{
+								fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+								letterSpacing: '-0.03em',
+								lineHeight: 1.1,
+							}}
+						>
+							Projects &{' '}
+							<span
+								style={{
+									background:
+										'linear-gradient(135deg, #c084fc, #818cf8)',
+									WebkitBackgroundClip: 'text',
+									WebkitTextFillColor: 'transparent',
+									backgroundClip: 'text',
+								}}
+							>
+								Case Studies
+							</span>
+						</h2>
 
-                        <p
-                            className="max-w-lg mx-auto"
-                            style={{
-                                fontFamily: "'DM Mono', monospace",
-                                fontSize: '13px',
-                                color: '#475569',
-                                lineHeight: 1.7,
-                            }}
-                        >
-                            A curated selection of real-world builds — spanning
-                            commerce, data, collaboration, and infrastructure.
-                        </p>
-                    </motion.div>
+						<p
+							className="max-w-lg mx-auto"
+							style={{
+								fontFamily: "'DM Mono', monospace",
+								fontSize: '13px',
+								color: '#475569',
+								lineHeight: 1.7,
+							}}
+						>
+							A curated selection of real-world builds — spanning
+							commerce, data, collaboration, and infrastructure.
+						</p>
+					</motion.div>
 
-                    {/* Divider */}
-                    <motion.div
-                        initial={{ scaleX: 0 }}
-                        animate={inView ? { scaleX: 1 } : {}}
-                        transition={{ duration: 0.8, delay: 0.15 }}
-                        className="divider-line mb-12"
-                    />
+					{/* Divider */}
+					<motion.div
+						initial={{ scaleX: 0 }}
+						animate={inView ? { scaleX: 1 } : {}}
+						transition={{ duration: 0.8, delay: 0.15 }}
+						className="divider-line mb-12"
+					/>
 
-                    {/* ── Grid ── */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        {projects.map((project, i) => (
-                            <ProjectCard
-                                key={project.title}
-                                project={project}
-                                index={i}
-                                inView={inView}
-                            />
-                        ))}
-                    </div>
+					{/* ── Grid ── */}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+						{projects.map((project, i) => (
+							<ProjectCard
+								key={project.title}
+								project={project}
+								index={i}
+								inView={inView}
+							/>
+						))}
+					</div>
 
-                    {/* ── View All CTA ── */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ delay: 0.5, duration: 0.7 }}
-                        className="flex justify-center mt-14"
-                    >
-                        <motion.a
-                            href="#"
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all"
-                            style={{
-                                fontFamily: "'Syne', sans-serif",
-                                background: 'rgba(192,132,252,0.08)',
-                                border: '1px solid rgba(192,132,252,0.25)',
-                                color: '#c084fc',
-                                letterSpacing: '0.02em',
-                            }}
-                        >
-                            View all projects
-                            <ArrowUpRight className="w-4 h-4" />
-                        </motion.a>
-                    </motion.div>
-                </div>
-            </section>
-        );
+					{/* ── View All CTA ── */}
+					<motion.div
+						initial={{ opacity: 0, y: 16 }}
+						animate={inView ? { opacity: 1, y: 0 } : {}}
+						transition={{ delay: 0.5, duration: 0.7 }}
+						className="flex justify-center mt-14"
+					>
+						<motion.a
+							href="https://github.com/Topsurpass/"
+							whileHover={{ scale: 1.03 }}
+							whileTap={{ scale: 0.97 }}
+							className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all"
+							style={{
+								fontFamily: "'Syne', sans-serif",
+								background: 'rgba(192,132,252,0.08)',
+								border: '1px solid rgba(192,132,252,0.25)',
+								color: '#c084fc',
+								letterSpacing: '0.02em',
+							}}
+						>
+							View all projects
+							<ArrowUpRight className="w-4 h-4" />
+						</motion.a>
+					</motion.div>
+				</div>
+			</section>
+		);
     }
 );
 

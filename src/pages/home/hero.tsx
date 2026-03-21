@@ -481,12 +481,11 @@ export const HeroSection = forwardRef<HTMLElement>(
 						</motion.div>
 					</div>
 
-					{/* Scroll indicator */}
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ delay: 1.8 }}
-						className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+						className="hidden md:absolute bottom-0 left-1/2 -translate-x-1/2 md:flex md:flex-col items-center gap-2"
 					>
 						<span
 							style={{
