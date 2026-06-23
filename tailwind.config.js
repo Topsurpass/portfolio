@@ -28,6 +28,16 @@ const config = {
     		colors: {
     			background: 'hsl(var(--background))',
     			foreground: 'hsl(var(--foreground))',
+    			ink: 'var(--ed-ink)',
+    			surface: 'var(--ed-surface)',
+    			ed: {
+    				hi: 'var(--ed-text-hi)',
+    				DEFAULT: 'var(--ed-text)',
+    				mid: 'var(--ed-text-mid)',
+    				dim: 'var(--ed-text-dim)',
+    				accent: 'var(--ed-accent)',
+    				line: 'var(--ed-line)',
+    			},
     			card: {
     				DEFAULT: 'hsl(var(--card))',
     				foreground: 'hsl(var(--card-foreground))'

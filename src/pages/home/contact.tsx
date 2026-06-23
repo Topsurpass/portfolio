@@ -1,358 +1,356 @@
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import {
-	forwardRef,
-	type ForwardedRef,
-	useRef,
-	useState,
-	useEffect,
-} from 'react';
-import { Mail, ArrowUpRight, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { contactMethods, socialLinks, floatingDots } from '@/data';
+	Mail,
+	Phone,
+	MapPin,
+	Github,
+	Linkedin,
+	ArrowUpRight,
+	Send,
+	CheckCircle2,
+	Loader2,
+} from 'lucide-react';
+import { SectionHeading } from '@/components/section-heading';
 
-// Magnetic tilt card with spotlight effect
-function MagneticCard({
-	children,
-	className = '',
-	glowColor,
-}: {
-	children: React.ReactNode;
-	className?: string;
-	glowColor: string;
-}) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [isHovered, setIsHovered] = useState(false);
-	const [spotlightPos, setSpotlightPos] = useState({ x: 50, y: 50 });
+// Set VITE_FORMSPREE_ENDPOINT in your .env to a free Formspree form
+// (https://formspree.io) to receive submissions. Until then the form falls
+// back to opening the visitor's email client.
+const FORM_ENDPOINT = import.meta.env.VITE_FORMSPREE_ENDPOINT as
+	| string
+	| undefined;
+const EMAIL = 'temitopeabiodun685@gmail.com';
 
-	const x = useMotionValue(0);
-	const y = useMotionValue(0);
-	const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [8, -8]), {
-		stiffness: 300,
-		damping: 30,
-	});
-	const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-8, 8]), {
-		stiffness: 300,
-		damping: 30,
-	});
+const ease = [0.22, 1, 0.36, 1] as const;
 
-	const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (!ref.current) return;
-		const rect = ref.current.getBoundingClientRect();
-		const px = (e.clientX - rect.left) / rect.width - 0.5;
-		const py = (e.clientY - rect.top) / rect.height - 0.5;
-		x.set(px);
-		y.set(py);
-		setSpotlightPos({
-			x: ((e.clientX - rect.left) / rect.width) * 100,
-			y: ((e.clientY - rect.top) / rect.height) * 100,
-		});
-	};
+const directLinks = [
+	{
+		icon: <Mail className="w-[18px] h-[18px]" />,
+		label: 'Email',
+		value: EMAIL,
+		href: `mailto:${EMAIL}`,
+		accent: '#5b9df9',
+	},
+	{
+		icon: <Phone className="w-[18px] h-[18px]" />,
+		label: 'Phone',
+		value: '+234 810 730 4148',
+		href: 'tel:+2348107304148',
+		accent: '#68D391',
+	},
+	{
+		icon: <MapPin className="w-[18px] h-[18px]" />,
+		label: 'Location',
+		value: 'Lagos, Nigeria',
+		href: undefined,
+		accent: '#FC8181',
+	},
+];
 
-	const handleMouseLeave = () => {
-		x.set(0);
-		y.set(0);
-		setIsHovered(false);
-	};
+const socials = [
+	{
+		icon: <Linkedin className="w-[18px] h-[18px]" />,
+		label: 'LinkedIn',
+		href: 'https://linkedin.com/in/temitope-olowosuyi',
+		accent: '#60A5FA',
+	},
+	{
+		icon: <Github className="w-[18px] h-[18px]" />,
+		label: 'GitHub',
+		href: 'https://github.com/Topsurpass',
+		accent: '#CBD5E1',
+	},
+];
+
+type Status = 'idle' | 'submitting' | 'success' | 'error';
+type Errors = { name?: string; email?: string; message?: string };
+
+function validate(v: { name: string; email: string; message: string }): Errors {
+	const errs: Errors = {};
+	if (!v.name.trim()) errs.name = 'Please enter your name.';
+	if (!v.email.trim()) errs.email = 'Please enter your email.';
+	else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))
+		errs.email = 'Enter a valid email address.';
+	if (!v.message.trim() || v.message.trim().length < 10)
+		errs.message = 'Tell me a little more (10+ characters).';
+	return errs;
+}
+
+export function ContactSection() {
+	const [status, setStatus] = useState<Status>('idle');
+	const [errors, setErrors] = useState<Errors>({});
+
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		const form = e.currentTarget;
+		const fd = new FormData(form);
+		const values = {
+			name: String(fd.get('name') ?? ''),
+			email: String(fd.get('email') ?? ''),
+			message: String(fd.get('message') ?? ''),
+		};
+
+		const errs = validate(values);
+		setErrors(errs);
+		if (Object.keys(errs).length > 0) return;
+
+		// No backend configured → fall back to the visitor's mail client.
+		if (!FORM_ENDPOINT) {
+			window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(
+				`Portfolio enquiry from ${values.name}`
+			)}&body=${encodeURIComponent(values.message)}`;
+			return;
+		}
+
+		setStatus('submitting');
+		try {
+			const res = await fetch(FORM_ENDPOINT, {
+				method: 'POST',
+				body: fd,
+				headers: { Accept: 'application/json' },
+			});
+			if (res.ok) {
+				setStatus('success');
+				form.reset();
+			} else {
+				setStatus('error');
+			}
+		} catch {
+			setStatus('error');
+		}
+	}
 
 	return (
-		<motion.div
-			ref={ref}
-			onMouseMove={handleMouseMove}
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={handleMouseLeave}
-			style={{ rotateX, rotateY, transformPerspective: 800 }}
-			className={`relative cursor-pointer ${className}`}
+		<section
+			id="contact"
+			className="contact-section py-28 relative z-10"
+			style={{ background: 'var(--ed-surface)' }}
 		>
-			{/* Spotlight */}
-			{isHovered && (
-				<div
-					className="pointer-events-none absolute inset-0 rounded-2xl z-10 transition-opacity duration-300"
-					style={{
-						background: `radial-gradient(circle at ${spotlightPos.x}% ${spotlightPos.y}%, ${glowColor}22 0%, transparent 65%)`,
-					}}
+			<div className="contact-grid-bg" />
+			<div className="contact-radial-glow" />
+
+			<div className="ed-container z-10">
+				<SectionHeading
+					index="04"
+					kicker="Contact"
+					title={
+						<>
+							Let&apos;s build{' '}
+							<span className="ed-name-accent">something</span>
+						</>
+					}
+					lead="Have a role, a project, or just a question? Send a note — I usually reply within a day."
 				/>
-			)}
-			{/* Glow border */}
-			<motion.div
-				animate={{ opacity: isHovered ? 1 : 0 }}
-				transition={{ duration: 0.3 }}
-				className="pointer-events-none absolute -inset-px rounded-2xl z-0"
-				style={{
-					background: `linear-gradient(135deg, ${glowColor}60, transparent 60%, ${glowColor}30)`,
-				}}
-			/>
-			{children}
-		</motion.div>
-	);
-}
 
-function FloatingDot({
-	delay,
-	x,
-	y,
-	size,
-}: {
-	delay: number;
-	x: string;
-	y: string;
-	size: number;
-}) {
-	return (
-		<motion.div
-			className="absolute rounded-full pointer-events-none"
-			style={{
-				left: x,
-				top: y,
-				width: size,
-				height: size,
-				background: 'rgba(99,179,237,0.15)',
-			}}
-			animate={{ y: [0, -18, 0], opacity: [0.3, 0.7, 0.3] }}
-			transition={{
-				duration: 4 + delay,
-				repeat: Infinity,
-				delay,
-				ease: 'easeInOut',
-			}}
-		/>
-	);
-}
-
-export const ContactSection = forwardRef(
-	(_props, ref: ForwardedRef<HTMLElement>) => {
-		const [typed, setTyped] = useState('');
-		const heading = "Let's Connect";
-
-		useEffect(() => {
-			let i = 0;
-			const interval = setInterval(() => {
-				setTyped(heading.slice(0, i + 1));
-				i++;
-				if (i >= heading.length) clearInterval(interval);
-			}, 60);
-			return () => clearInterval(interval);
-		}, []);
-
-		return (
-			<>
-				<section
-					ref={ref}
-					className="contact-section py-28 relative z-10"
-				>
-					<div className="contact-grid-bg" />
-					<div className="contact-radial-glow" />
-					<div className="noise-overlay" />
-					{floatingDots.map((dot, i) => (
-						<FloatingDot key={i} {...dot} />
-					))}
-
-					<div className="max-w-5xl mx-auto px-6 relative z-10">
-						{/* Header */}
-						<motion.div
-							initial={{ opacity: 0, y: 30 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true, margin: '-80px' }}
-							transition={{
-								duration: 0.7,
-								ease: [0.22, 1, 0.36, 1],
-							}}
-							className="text-center mb-20"
-						>
-							{/* Label chip */}
-							<motion.div
-								initial={{ opacity: 0, scale: 0.9 }}
-								whileInView={{ opacity: 1, scale: 1 }}
-								transition={{ delay: 0.1, duration: 0.5 }}
-								className="inline-flex items-center gap-2 mb-6"
-							>
-								<span className="mono text-xs tracking-[0.2em] uppercase px-4 py-2 rounded-full border border-blue-400/20 text-blue-400/80 bg-blue-500/5">
-									<Sparkles className="w-3 h-3 inline mr-1 -mt-px" />
-									Available for work
-								</span>
-							</motion.div>
-
-							{/* Heading with typewriter */}
-							<h2
-								className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight"
+				<div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 mt-12">
+					{/* ── Form ── */}
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true, margin: '-80px' }}
+						transition={{ duration: 0.6, ease }}
+					>
+						{status === 'success' ? (
+							<div
+								role="status"
+								className="flex flex-col items-start gap-4 rounded-2xl p-8"
 								style={{
-									letterSpacing: '-0.02em',
-									lineHeight: 1.1,
+									background: 'var(--ed-raised)',
+									border: '1px solid rgba(104,211,145,0.3)',
 								}}
 							>
-								{typed}
-								{typed.length < heading.length && (
-									<span className="cursor-blink" />
-								)}
-							</h2>
-
-							<motion.p
-								initial={{ opacity: 0, y: 10 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								transition={{ delay: 0.3, duration: 0.6 }}
-								className="text-base md:text-lg text-slate-400 max-w-md mx-auto leading-relaxed"
-							>
-								Got a project in mind? I'd love to hear about
-								it. Let's build something remarkable together.
-							</motion.p>
-						</motion.div>
-
-						<div className="grid md:grid-cols-2 gap-4 mb-10">
-							{contactMethods.map((method, index) => (
-								<motion.div
-									key={method.label}
-									initial={{ opacity: 0, y: 24 }}
-									whileInView={{ opacity: 1, y: 0 }}
-									viewport={{ once: true }}
-									transition={{
-										delay: index * 0.12,
-										duration: 0.6,
-										ease: [0.22, 1, 0.36, 1],
+								<CheckCircle2 className="w-10 h-10" style={{ color: '#68D391' }} />
+								<h3
+									className="font-bold"
+									style={{
+										fontFamily: "'Syne', sans-serif",
+										fontSize: '1.4rem',
+										color: 'var(--ed-text-hi)',
 									}}
 								>
-									<MagneticCard glowColor={method.glowColor}>
-										<div className="contact-card p-5 flex items-center gap-4 group">
-											<div
-												className="icon-ring"
-												style={{
-													background: `${method.color}15`,
-													border: `1px solid ${method.color}30`,
-												}}
-											>
-												<motion.div
-													animate={{
-														scale: [1, 1.1, 1],
-													}}
-													transition={{
-														duration: 2.5,
-														repeat: Infinity,
-														delay: index * 0.4,
-													}}
-													style={{
-														color: method.color,
-													}}
-												>
-													{method.icon}
-												</motion.div>
-												<motion.div
-													className="absolute inset-0 rounded-xl"
-													animate={{
-														scale: [1, 1.4],
-														opacity: [0.3, 0],
-													}}
-													transition={{
-														duration: 2,
-														repeat: Infinity,
-														delay: index * 0.4,
-													}}
-													style={{
-														border: `1px solid ${method.color}`,
-													}}
-												/>
-											</div>
-											<div>
-												<p
-													className="mono text-xs uppercase tracking-widest mb-0.5"
-													style={{
-														color: `${method.color}99`,
-													}}
-												>
-													{method.label}
-												</p>
-												{method.href ? (
-													<Link
-														to={method.href}
-														className="text-sm font-semibold text-slate-200 hover:text-white transition-colors group-hover:underline underline-offset-2"
-													>
-														{method.value}
-													</Link>
-												) : (
-													<p className="text-sm font-semibold text-slate-200">
-														{method.value}
-													</p>
-												)}
-											</div>
-										</div>
-									</MagneticCard>
-								</motion.div>
+									Message sent — thank you!
+								</h3>
+								<p className="ed-body">
+									I&apos;ve got your message and will get back to you shortly.
+								</p>
+							</div>
+						) : (
+							<form onSubmit={handleSubmit} noValidate className="space-y-5">
+								<div className="grid sm:grid-cols-2 gap-5">
+									<div>
+										<label htmlFor="name" className="ed-label block mb-2">
+											Name
+										</label>
+										<input
+											id="name"
+											name="name"
+											type="text"
+											autoComplete="name"
+											className="ed-field"
+											placeholder="Your name"
+											aria-invalid={!!errors.name}
+											aria-describedby={errors.name ? 'name-err' : undefined}
+										/>
+										{errors.name && (
+											<p id="name-err" className="ed-mono mt-1.5" style={errStyle}>
+												{errors.name}
+											</p>
+										)}
+									</div>
+									<div>
+										<label htmlFor="email" className="ed-label block mb-2">
+											Email
+										</label>
+										<input
+											id="email"
+											name="email"
+											type="email"
+											autoComplete="email"
+											className="ed-field"
+											placeholder="you@company.com"
+											aria-invalid={!!errors.email}
+											aria-describedby={errors.email ? 'email-err' : undefined}
+										/>
+										{errors.email && (
+											<p id="email-err" className="ed-mono mt-1.5" style={errStyle}>
+												{errors.email}
+											</p>
+										)}
+									</div>
+								</div>
+
+								<div>
+									<label htmlFor="message" className="ed-label block mb-2">
+										Message
+									</label>
+									<textarea
+										id="message"
+										name="message"
+										rows={5}
+										className="ed-field resize-y"
+										placeholder="Tell me about the role or project…"
+										aria-invalid={!!errors.message}
+										aria-describedby={errors.message ? 'message-err' : undefined}
+									/>
+									{errors.message && (
+										<p id="message-err" className="ed-mono mt-1.5" style={errStyle}>
+											{errors.message}
+										</p>
+									)}
+								</div>
+
+								{status === 'error' && (
+									<p role="alert" className="ed-mono" style={errStyle}>
+										Something went wrong sending your message. Please email me
+										directly at {EMAIL}.
+									</p>
+								)}
+
+								<button
+									type="submit"
+									disabled={status === 'submitting'}
+									className="ed-btn ed-btn-primary w-full sm:w-auto disabled:opacity-60"
+								>
+									{status === 'submitting' ? (
+										<>
+											<Loader2 className="w-4 h-4 animate-spin" />
+											Sending…
+										</>
+									) : (
+										<>
+											<Send className="w-4 h-4" />
+											Send message
+										</>
+									)}
+								</button>
+							</form>
+						)}
+					</motion.div>
+
+					{/* ── Direct contact ── */}
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true, margin: '-80px' }}
+						transition={{ delay: 0.1, duration: 0.6, ease }}
+						className="space-y-3"
+					>
+						{directLinks.map((m) => {
+							const inner = (
+								<div className="flex items-center gap-4 rounded-2xl p-4 ed-contact-row">
+									<span
+										className="flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0"
+										style={{
+											background: `${m.accent}15`,
+											border: `1px solid ${m.accent}30`,
+											color: m.accent,
+										}}
+									>
+										{m.icon}
+									</span>
+									<span>
+										<span className="ed-label block">{m.label}</span>
+										<span
+											style={{
+												color: 'var(--ed-text-hi)',
+												fontSize: 14,
+												fontWeight: 600,
+											}}
+										>
+											{m.value}
+										</span>
+									</span>
+								</div>
+							);
+							return m.href ? (
+								<a key={m.label} href={m.href} className="block">
+									{inner}
+								</a>
+							) : (
+								<div key={m.label}>{inner}</div>
+							);
+						})}
+
+						<div className="flex gap-3 pt-2">
+							{socials.map((s) => (
+								<a
+									key={s.label}
+									href={s.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-2 px-4 py-2.5 rounded-xl ed-contact-row"
+									style={{ fontSize: 13 }}
+								>
+									<span style={{ color: s.accent }}>{s.icon}</span>
+									<span style={{ color: 'var(--ed-text)' }}>{s.label}</span>
+									<ArrowUpRight className="w-3.5 h-3.5 opacity-50" />
+								</a>
 							))}
 						</div>
+					</motion.div>
+				</div>
 
-						<motion.div
-							initial={{ scaleX: 0 }}
-							whileInView={{ scaleX: 1 }}
-							transition={{ duration: 0.8, delay: 0.2 }}
-							className="divider-line mb-10"
-						/>
+				<motion.div
+					className="divider-line mt-20 mb-8"
+					initial={{ scaleX: 0 }}
+					whileInView={{ scaleX: 1 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.8 }}
+				/>
+				<p
+					className="ed-mono text-center"
+					style={{ fontSize: 12, color: 'var(--ed-text-dim)', letterSpacing: '0.05em' }}
+				>
+					© {new Date().getFullYear()} · Olowosuyi Temitope · Crafted with care in
+					Lagos, Nigeria
+				</p>
+			</div>
+		</section>
+	);
+}
 
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.3, duration: 0.6 }}
-							className="flex flex-col sm:flex-row items-center justify-between gap-6"
-						>
-							<div className="flex gap-3 flex-wrap justify-center sm:justify-start">
-								{socialLinks.map((s, i) => (
-									<motion.div
-										key={s.label}
-										whileHover={{ scale: 1.04 }}
-										whileTap={{ scale: 0.97 }}
-										transition={{ delay: i * 0.05 }}
-									>
-										<Link
-											to={s.href}
-											target="_blank"
-											rel="noopener noreferrer"
-											className={`social-btn border ${s.border} ${s.hover} text-slate-300 hover:text-white`}
-											style={{
-												borderColor: `${s.accent}25`,
-											}}
-										>
-											<span style={{ color: s.accent }}>
-												{s.icon}
-											</span>
-											{s.label}
-											<ArrowUpRight className="w-3.5 h-3.5 opacity-50" />
-										</Link>
-									</motion.div>
-								))}
-							</div>
-
-							<motion.div
-								whileHover={{ scale: 1.02 }}
-								whileTap={{ scale: 0.98 }}
-							>
-								<Link to="mailto:temitopeabiodun685@gmail.com">
-									<button className="cta-btn">
-										<Mail className="w-4 h-4" />
-										Send a message
-										<motion.span
-											animate={{ x: [0, 3, 0] }}
-											transition={{
-												duration: 1.5,
-												repeat: Infinity,
-											}}
-										>
-											→
-										</motion.span>
-									</button>
-								</Link>
-							</motion.div>
-						</motion.div>
-
-						<motion.p
-							initial={{ opacity: 0 }}
-							whileInView={{ opacity: 1 }}
-							transition={{ delay: 0.6, duration: 0.8 }}
-							className="mono text-center text-xs text-slate-600 mt-14 tracking-wider"
-						>
-							© {new Date().getFullYear()} · Temitope Olowosuyi·
-							Crafted with care in Lagos, Nigeria
-						</motion.p>
-					</div>
-				</section>
-			</>
-		);
-	}
-);
-
-ContactSection.displayName = 'ContactSection';
+const errStyle: React.CSSProperties = {
+	fontSize: 11,
+	color: '#fca5a5',
+	letterSpacing: '0.02em',
+};

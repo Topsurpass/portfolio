@@ -1,400 +1,246 @@
 import { motion, useInView } from 'framer-motion';
-import { forwardRef, type ForwardedRef, useRef, useState } from 'react';
-import { ArrowUpRight, Github, Globe, ExternalLink } from 'lucide-react';
+import { useRef } from 'react';
+import { ArrowUpRight, Github, Globe, Check } from 'lucide-react';
 import { projects } from '@/data';
 import { useProjectSnapshot } from '@/hooks/useProjectSnapshot';
+import { SectionHeading } from '@/components/section-heading';
 
-// ─── Tech Tag ─────────────────────────────────────────────────────────────────
+const ease = [0.22, 1, 0.36, 1] as const;
+
 const TECH_COLORS: Record<string, string> = {
-    'Next.js': '#FFFFFF',
-    TypeScript: '#3178C6',
-    Tailwind: '#38BDF8',
-    Stripe: '#635BFF',
-    React: '#61DAFB',
-    Python: '#F6AD55',
-    TensorFlow: '#FF8C00',
-    AWS: '#F97316',
-    'Node.js': '#68D391',
-    WebSockets: '#F6AD55',
-    Redis: '#FC8181',
-    GraphQL: '#E535AB',
-    Kafka: '#C084FC',
-    Kubernetes: '#3B82F6',
+	'Next.js': '#FFFFFF',
+	TypeScript: '#3178C6',
+	Tailwind: '#38BDF8',
+	React: '#61DAFB',
+	Python: '#F6AD55',
+	Django: '#44B78B',
+	Docker: '#2496ED',
+	'Node.js': '#68D391',
 };
 
 function TechTag({ name }: { name: string }) {
-    const color = TECH_COLORS[name] ?? '#94a3b8';
-    return (
-        <span
-            className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap"
-            style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: '10px',
-                letterSpacing: '0.06em',
-                color: color + 'dd',
-                background: color + '12',
-                border: `1px solid ${color}25`,
-            }}
-        >
-            {name}
-        </span>
-    );
+	const color = TECH_COLORS[name] ?? '#94a3b8';
+	return (
+		<span
+			className="inline-flex items-center px-2.5 py-1 rounded-md ed-mono whitespace-nowrap"
+			style={{
+				fontSize: '10px',
+				letterSpacing: '0.06em',
+				color: color + 'dd',
+				background: color + '12',
+				border: `1px solid ${color}25`,
+			}}
+		>
+			{name}
+		</span>
+	);
 }
 
-function ProjectCard({
-    project,
-    index,
-    inView,
+function CaseStudy({
+	project,
+	index,
+	inView,
 }: {
-    project: (typeof projects)[number];
-    index: number;
-    inView: boolean;
+	project: (typeof projects)[number];
+	index: number;
+	inView: boolean;
 }) {
-    const [hovered, setHovered] = useState(false);
-    const [spotPos, setSpotPos] = useState({ x: 50, y: 50 });
-    const cardRef = useRef<HTMLDivElement>(null);
+	const reversed = index % 2 === 1;
+	const {
+		src: screenshotSrc,
+		loading,
+		error,
+	} = useProjectSnapshot(project.link);
 
-    const { src: screenshotSrc, loading: screenshotLoading, error: screenshotError } =
-        useProjectSnapshot(project.link);
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!cardRef.current) return;
-        const r = cardRef.current.getBoundingClientRect();
-        setSpotPos({
-            x: ((e.clientX - r.left) / r.width) * 100,
-            y: ((e.clientY - r.top) / r.height) * 100,
-        });
-    };
-
-    return (
-        <motion.div
-            ref={cardRef}
-            initial={{ opacity: 0, y: 32 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{
-                delay: index * 0.1,
-                duration: 0.7,
-                ease: [0.22, 1, 0.36, 1],
-            }}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            onMouseMove={handleMouseMove}
-            className="group relative flex flex-col"
-            style={{ cursor: 'default' }}
-        >
-            <div
-                className="relative flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-300"
-                style={{
-                    background: hovered
-                        ? `radial-gradient(circle at ${spotPos.x}% ${spotPos.y}%, ${project.accent}0d 0%, rgba(255,255,255,0.02) 60%)`
-                        : 'rgba(255,255,255,0.025)',
-                    border: `1px solid ${hovered ? project.accent + '35' : 'rgba(255,255,255,0.07)'}`,
-                    backdropFilter: 'blur(10px)',
-                    transform: hovered ? 'translateY(-5px)' : 'none',
-                }}
-            >
-                {/* ── Illustration / Preview ── */}
-                <div
-                    className="relative overflow-hidden"
-                    style={{
-                        background: `linear-gradient(145deg, ${project.accent}08, #060d18)`,
-                        borderBottom: `1px solid ${hovered ? project.accent + '25' : 'rgba(255,255,255,0.05)'}`,
-                        aspectRatio: '16/9',
-                    }}
-                >
-                    {/* Screenshot / skeleton / fallback */}
-                    {screenshotLoading ? (
-                        // ── Skeleton shimmer ──
-                        <div
-                            className="w-full h-full flex flex-col items-center justify-center gap-3"
-                            style={{
-                                background: `linear-gradient(145deg, ${project.accent}08, #060d18)`,
-                            }}
-                        >
-                            <div
-                                className="w-8 h-8 rounded-full border-2 animate-spin"
-                                style={{
-                                    borderColor: `${project.accent}30`,
-                                    borderTopColor: project.accent,
-                                }}
-                            />
-                            <span
-                                style={{
-                                    fontFamily: "'DM Mono', monospace",
-                                    fontSize: '9px',
-                                    letterSpacing: '0.18em',
-                                    color: project.accent + '55',
-                                    textTransform: 'uppercase',
-                                }}
-                            >
-                                Loading Preview
-                            </span>
-                        </div>
-                    ) : !screenshotError && screenshotSrc ? (
-                        <img
-                            src={screenshotSrc}
-                            alt={`${project.title} preview`}
-                            className="w-full h-full object-cover object-top transition-transform duration-700"
-                            style={{
-                                transform: hovered ? 'scale(1.05)' : 'scale(1)',
-                            }}
-                        />
-                    ) : (
-                        project.illustration
-                    )}
-
-
-                    {/* Tag badge */}
-                    <div className="absolute top-3 left-3 flex items-center gap-2">
-                        <span
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                            style={{
-                                fontFamily: "'DM Mono', monospace",
-                                fontSize: '9px',
-                                letterSpacing: '0.15em',
-                                color: project.accent + 'cc',
-                                background: project.accent + '22',
-                                border: `1px solid ${project.accent}40`,
-                                backdropFilter: 'blur(8px)',
-                            }}
-                        >
-                            {project.tag.toUpperCase()}
-                        </span>
-                    </div>
-
-                  
-                </div>
-
-                {/* ── Content ── */}
-                <div className="flex flex-col flex-1 p-5">
-                    {/* Title */}
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3
-                            className="font-bold text-white leading-tight"
-                            style={{
-                                fontFamily: "'Syne', sans-serif",
-                                fontSize: '1.05rem',
-                                letterSpacing: '-0.01em',
-                            }}
-                        >
-                            {project.title}
-                        </h3>
-                    </div>
-
-                    {/* Description */}
-                    <p
-                        className="mb-4 leading-relaxed flex-1"
-                        style={{
-                            fontFamily: "'DM Mono', monospace",
-                            fontSize: '11.5px',
-                            color: '#475569',
-                            lineHeight: 1.65,
-                        }}
-                    >
-                        {project.description}
-                    </p>
-
-
-                    {/* Tech tags */}
-                    <div className="flex flex-wrap gap-1.5 mb-5">
-                        {project.tech.map((t) => (
-                            <TechTag key={t} name={t} />
-                        ))}
-                    </div>
-
-                    {/* Bottom links */}
-                    <div
-                        className="flex items-center justify-between pt-4"
-                        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-                    >
-                        <a
-                            href={project.link}
-                            className="flex items-center gap-1.5 transition-all group/link"
-                            style={{
-                                color: project.accent + '99',
-                                fontSize: '12px',
-                                fontFamily: "'DM Mono', monospace",
-                            }}
-                        >
-                            <Globe className="w-3.5 h-3.5" />
-                            <span
-                                className="group-hover/link:underline underline-offset-2"
-                                style={{ color: project.accent }}
-                            >
-                                Live Demo
-                            </span>
-                            <ExternalLink className="w-3 h-3 opacity-50" />
-						</a>
-						<a
-                        
-                            href={project.github}
-                            className="flex items-center gap-1.5 transition-all group/link"
-                            style={{
-                                fontSize: '12px',
-                                fontFamily: "'DM Mono', monospace",
-                                color: '#475569',
-                            }}
-                        >
-                            <Github className="w-3.5 h-3.5" />
-                            <span className="group-hover/link:text-white group-hover/link:underline underline-offset-2">
-                                Source
-                            </span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </motion.div>
-    );
-}
-
-// ─── Projects Section ──────────────────────────────────────────────────────────
-export const ProjectsSection = forwardRef(
-    (_props, ref: ForwardedRef<HTMLElement>) => {
-        const innerRef = useRef<HTMLDivElement>(null);
-        const inView = useInView(innerRef, { once: true, margin: '-60px' });
-
-        return (
-			<section ref={ref} className="projects-section py-28 relative z-10">
-				<div className="projects-grid-bg" />
-				<div className="projects-noise" />
-
-				{/* Top glow */}
+	return (
+		<motion.article
+			initial={{ opacity: 0, y: 32 }}
+			animate={inView ? { opacity: 1, y: 0 } : {}}
+			transition={{ delay: index * 0.12, duration: 0.7, ease }}
+			className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center"
+		>
+			{/* ── Preview ── */}
+			<div className={reversed ? 'lg:order-2' : ''}>
 				<div
-					className="absolute pointer-events-none"
-					style={{
-						top: '-100px',
-						left: '50%',
-						transform: 'translateX(-50%)',
-						width: '700px',
-						height: '350px',
-						background:
-							'radial-gradient(ellipse, rgba(192,132,252,0.06) 0%, transparent 70%)',
-					}}
-				/>
-
-				<div
-					className="max-w-6xl mx-auto px-6 relative z-10"
-					ref={innerRef}
+					className="ed-case-frame group"
+					style={{ '--accent': project.accent } as React.CSSProperties}
 				>
-					{/* ── Header ── */}
-					<motion.div
-						initial={{ opacity: 0, y: 24 }}
-						animate={inView ? { opacity: 1, y: 0 } : {}}
-						transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-						className="text-center mb-16"
-					>
-						<div className="inline-flex items-center gap-2 mb-5">
+					{loading ? (
+						<div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
 							<div
-								className="h-px w-10"
+								className="w-8 h-8 rounded-full border-2 animate-spin"
 								style={{
-									background:
-										'linear-gradient(90deg, transparent, #c084fc)',
+									borderColor: `${project.accent}30`,
+									borderTopColor: project.accent,
 								}}
 							/>
 							<span
+								className="ed-mono"
 								style={{
-									fontFamily: "'DM Mono', monospace",
-									fontSize: '10px',
-									letterSpacing: '0.25em',
-									color: '#c084fc',
+									fontSize: 9,
+									letterSpacing: '0.18em',
+									color: project.accent + '88',
 									textTransform: 'uppercase',
 								}}
 							>
-								Selected Work
+								Loading preview
 							</span>
-							<div
-								className="h-px w-10"
-								style={{
-									background:
-										'linear-gradient(90deg, #c084fc, transparent)',
-								}}
-							/>
 						</div>
-
-						<h2
-							className="font-extrabold text-white mb-4"
-							style={{
-								fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-								letterSpacing: '-0.03em',
-								lineHeight: 1.1,
-							}}
-						>
-							Projects &{' '}
-							<span
-								style={{
-									background:
-										'linear-gradient(135deg, #c084fc, #818cf8)',
-									WebkitBackgroundClip: 'text',
-									WebkitTextFillColor: 'transparent',
-									backgroundClip: 'text',
-								}}
-							>
-								Case Studies
-							</span>
-						</h2>
-
-						<p
-							className="max-w-lg mx-auto"
-							style={{
-								fontFamily: "'DM Mono', monospace",
-								fontSize: '13px',
-								color: '#475569',
-								lineHeight: 1.7,
-							}}
-						>
-							A curated selection of real-world builds — spanning
-							commerce, data, collaboration, and infrastructure.
-						</p>
-					</motion.div>
-
-					{/* Divider */}
-					<motion.div
-						initial={{ scaleX: 0 }}
-						animate={inView ? { scaleX: 1 } : {}}
-						transition={{ duration: 0.8, delay: 0.15 }}
-						className="divider-line mb-12"
-					/>
-
-					{/* ── Grid ── */}
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-						{projects.map((project, i) => (
-							<ProjectCard
-								key={project.title}
-								project={project}
-								index={i}
-								inView={inView}
-							/>
-						))}
-					</div>
-
-					{/* ── View All CTA ── */}
-					<motion.div
-						initial={{ opacity: 0, y: 16 }}
-						animate={inView ? { opacity: 1, y: 0 } : {}}
-						transition={{ delay: 0.5, duration: 0.7 }}
-						className="flex justify-center mt-14"
-					>
-						<motion.a
-							href="https://github.com/Topsurpass/"
-							whileHover={{ scale: 1.03 }}
-							whileTap={{ scale: 0.97 }}
-							className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all"
-							style={{
-								fontFamily: "'Syne', sans-serif",
-								background: 'rgba(192,132,252,0.08)',
-								border: '1px solid rgba(192,132,252,0.25)',
-								color: '#c084fc',
-								letterSpacing: '0.02em',
-							}}
-						>
-							View all projects
-							<ArrowUpRight className="w-4 h-4" />
-						</motion.a>
-					</motion.div>
+					) : !error && screenshotSrc ? (
+						<img
+							src={screenshotSrc}
+							alt={`Screenshot of ${project.title}`}
+							loading="lazy"
+							className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
+						/>
+					) : (
+						project.illustration
+					)}
 				</div>
-			</section>
-		);
-    }
-);
+			</div>
 
-ProjectsSection.displayName = 'ProjectsSection';
+			{/* ── Content ── */}
+			<div className={reversed ? 'lg:order-1' : ''}>
+				<div className="flex items-center gap-4 mb-5">
+					<span className="ed-case-index">
+						{String(project.caseStudy).padStart(2, '0')}
+					</span>
+					<span
+						className="px-2.5 py-1 rounded-full ed-mono"
+						style={{
+							fontSize: 9,
+							letterSpacing: '0.15em',
+							color: project.accent + 'dd',
+							background: project.accent + '18',
+							border: `1px solid ${project.accent}35`,
+							textTransform: 'uppercase',
+						}}
+					>
+						{project.tag}
+					</span>
+					<span className="ed-mono" style={{ fontSize: 11, color: 'var(--ed-text-dim)' }}>
+						{project.year}
+					</span>
+				</div>
+
+				<h3 className="ed-case-title">{project.title}</h3>
+
+				<p
+					className="ed-mono mt-2 mb-5"
+					style={{ fontSize: 12, letterSpacing: '0.05em', color: project.accent }}
+				>
+					{project.role}
+				</p>
+
+				<p className="ed-body mb-5 max-w-xl">{project.problem}</p>
+
+				<ul className="space-y-2.5 mb-6">
+					{project.highlights.map((h) => (
+						<li key={h} className="flex items-start gap-2.5">
+							<Check
+								className="w-4 h-4 mt-0.5 flex-shrink-0"
+								style={{ color: project.accent }}
+							/>
+							<span style={{ color: 'var(--ed-text)', fontSize: 14, lineHeight: 1.55 }}>
+								{h}
+							</span>
+						</li>
+					))}
+				</ul>
+
+				<div className="flex flex-wrap gap-1.5 mb-7">
+					{project.tech.map((t) => (
+						<TechTag key={t} name={t} />
+					))}
+				</div>
+
+				<div className="flex items-center gap-5">
+					<a
+						href={project.link}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-2 ed-mono font-semibold group/link"
+						style={{ fontSize: 13, color: project.accent }}
+					>
+						<Globe className="w-4 h-4" />
+						<span className="group-hover/link:underline underline-offset-4">
+							Live demo
+						</span>
+						<ArrowUpRight className="w-3.5 h-3.5 opacity-70" />
+					</a>
+					<a
+						href={project.github}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-2 ed-mono group/link"
+						style={{ fontSize: 13, color: 'var(--ed-text-mid)' }}
+					>
+						<Github className="w-4 h-4" />
+						<span className="group-hover/link:text-ed-hi group-hover/link:underline underline-offset-4">
+							Source
+						</span>
+					</a>
+				</div>
+			</div>
+		</motion.article>
+	);
+}
+
+export function ProjectsSection() {
+	const innerRef = useRef<HTMLDivElement>(null);
+	const inView = useInView(innerRef, { once: true, margin: '-60px' });
+
+	return (
+		<section
+			id="projects"
+			className="projects-section py-28 relative z-10"
+			style={{ background: 'var(--ed-surface)' }}
+		>
+			<div className="projects-grid-bg" />
+			<div className="projects-noise" />
+
+			<div className="ed-container z-10" ref={innerRef}>
+				<SectionHeading
+					index="03"
+					kicker="Selected Work"
+					title={
+						<>
+							Things I&apos;ve designed{' '}
+							<span className="ed-name-accent">&amp; shipped</span>
+						</>
+					}
+					lead="A close look at real, production builds — the problem, what I built, and how it shipped."
+					inView={inView}
+				/>
+
+				<div className="mt-10 space-y-24">
+					{projects.map((project, i) => (
+						<CaseStudy
+							key={project.title}
+							project={project}
+							index={i}
+							inView={inView}
+						/>
+					))}
+				</div>
+
+				<motion.div
+					initial={{ opacity: 0, y: 16 }}
+					animate={inView ? { opacity: 1, y: 0 } : {}}
+					transition={{ delay: 0.4, duration: 0.6 }}
+					className="flex justify-center mt-20"
+				>
+					<a
+						href="https://github.com/Topsurpass"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="ed-btn ed-btn-ghost"
+					>
+						More on GitHub
+						<ArrowUpRight className="w-4 h-4" />
+					</a>
+				</motion.div>
+			</div>
+		</section>
+	);
+}

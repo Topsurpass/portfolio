@@ -2,8 +2,11 @@ import { Outlet } from 'react-router-dom';
 
 export default function RootLayout() {
 	return (
-		<div>
+		<>
+			<a href="#main" className="skip-link">
+				Skip to content
+			</a>
 			<Outlet />
-		</div>
+		</>
 	);
 }

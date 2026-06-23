@@ -579,11 +579,20 @@ export const skills = [
 
 export const projects = [
 	{
-		title: 'E-Learning Platform',
+		title: 'Intranext — E-Learning Platform',
 		description:
 			'A full-stack e-learning platform with Next.js, TypeScript, Tailwind, and Django for backend. Features course browsing, signin,  exams and progress tracking.',
 		tech: ['Next.js', 'TypeScript', 'Tailwind'],
 		caseStudy: 1,
+		year: '2024',
+		role: 'Frontend lead · Full-stack',
+		problem:
+			'Learners needed one place to browse courses, sit timed exams and track progress — with a UI fast enough to feel native on low-bandwidth connections.',
+		highlights: [
+			'Course browsing, auth, timed exams and progress tracking',
+			'Server-rendered with the Next.js App Router for fast first paint',
+			'Type-safe end to end with strict TypeScript',
+		],
 		link: 'https://intranext.vercel.app/',
 		github: 'https://github.com/Topsurpass/intranext',
 		accent: '#087fd4',
@@ -1090,11 +1099,20 @@ export const projects = [
 		),
 	},
 	{
-		title: 'API Design for Intranext elearning web application',
+		title: 'Intranext — Platform API',
 		description:
 			'Designed and implemented RESTful APIs for user authentication, course management, and progress tracking using Django REST Framework. Integrated third-party services for payment processing and email notifications.',
 		tech: ['Python', 'Django', 'Docker'],
 		caseStudy: 2,
+		year: '2024',
+		role: 'Backend / API design',
+		problem:
+			'The platform needed a secure, well-documented API surface for auth, course management and progress — consumable by both the web app and future mobile clients.',
+		highlights: [
+			'RESTful endpoints with Django REST Framework',
+			'JWT auth, course management and progress tracking',
+			'Payment + email integrations, Dockerised, Swagger-documented',
+		],
 		link: 'https://temz.pythonanywhere.com/swagger/',
 		github: 'https://github.com/Topsurpass/intranextserver',
 		accent: '#df1717',
