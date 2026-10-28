@@ -1,66 +1,44 @@
-import { motion } from 'framer-motion';
+import { Reveal } from './reveal';
 
 interface SectionHeadingProps {
-	/** Two-digit section index, e.g. "02" */
-	index: string;
-	/** Mono kicker label above the title */
-	kicker: string;
-	/** The large editorial title (string or rich nodes) */
+	/** Short label shown above the rule, e.g. "Selected work" */
+	label: string;
+	/** Right-aligned counter or note beside the label */
+	meta?: string;
 	title: React.ReactNode;
-	/** Optional supporting line under the title */
 	lead?: React.ReactNode;
-	/** Whether the parent section is in view (drives the reveal) */
-	inView?: boolean;
 }
 
-/**
- * Shared editorial section header: numbered index, a thin rule, a mono kicker
- * and a large display title. Used across Skills / Projects / Contact so every
- * section shares one typographic system instead of bespoke inline markup.
- */
+/** Shared section header: label row with a hairline, then a large title. */
 export function SectionHeading({
-	index,
-	kicker,
+	label,
+	meta,
 	title,
 	lead,
-	inView = true,
 }: SectionHeadingProps) {
 	return (
-		<div>
-			<motion.div
-				initial={{ opacity: 0, y: 16 }}
-				animate={inView ? { opacity: 1, y: 0 } : {}}
-				transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-				className="ed-section-head"
-			>
-				<span className="ed-section-index">{index}</span>
-				<span className="ed-kicker">{kicker}</span>
-				<span className="ed-rule" aria-hidden="true" />
-			</motion.div>
-
-			<motion.h2
-				initial={{ opacity: 0, y: 20 }}
-				animate={inView ? { opacity: 1, y: 0 } : {}}
-				transition={{
-					delay: 0.08,
-					duration: 0.7,
-					ease: [0.22, 1, 0.36, 1],
-				}}
-				className="ed-h2 max-w-3xl"
-			>
-				{title}
-			</motion.h2>
-
-			{lead && (
-				<motion.p
-					initial={{ opacity: 0, y: 16 }}
-					animate={inView ? { opacity: 1, y: 0 } : {}}
-					transition={{ delay: 0.16, duration: 0.7 }}
-					className="ed-body mt-5 max-w-xl text-base"
-				>
-					{lead}
-				</motion.p>
-			)}
-		</div>
+		<header className="mb-14 md:mb-20">
+			<Reveal className="flex items-center justify-between border-b border-line pb-4">
+				<span className="eyebrow">{label}</span>
+				{meta && <span className="eyebrow">{meta}</span>}
+			</Reveal>
+			<div className="mt-10 grid gap-6 md:grid-cols-12">
+				<Reveal delay={0.05} className="md:col-span-7">
+					<h2 className="text-balance text-[clamp(2rem,4.5vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.035em]">
+						{title}
+					</h2>
+				</Reveal>
+				{lead && (
+					<Reveal
+						delay={0.12}
+						className="md:col-span-4 md:col-start-9 md:self-end"
+					>
+						<p className="text-pretty text-base leading-relaxed text-fg-muted">
+							{lead}
+						</p>
+					</Reveal>
+				)}
+			</div>
+		</header>
 	);
 }

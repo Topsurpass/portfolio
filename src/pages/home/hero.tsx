@@ -1,297 +1,215 @@
-import { motion, useReducedMotion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
-import { Download, ArrowRight, Github, Linkedin } from 'lucide-react';
-import cv from './Olowosuyi_Temitope.pdf';
-import { useScramble } from '@/hooks/useScramble';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import { profile } from '@/data';
+import { ease } from '@/components/reveal';
 
-// ─── RAF counter (ease-out cubic) ─────────────────────────────────────────────
-function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
-	const [val, setVal] = useState(0);
-	const rafRef = useRef<number>(0);
-	const reduce = useReducedMotion();
+const headline =
+	'Frontend engineer building fast, *dependable* interfaces for products people rely on.'.split(
+		' '
+	);
+
+function LocalTime() {
+	const format = () =>
+		new Intl.DateTimeFormat('en-GB', {
+			hour: '2-digit',
+			minute: '2-digit',
+			timeZone: profile.timeZone,
+		}).format(new Date());
+	const [time, setTime] = useState(format);
 
 	useEffect(() => {
-		if (reduce) {
-			setVal(to);
-			return;
-		}
-		const DELAY = 700;
-		const DURATION = 1400;
-		const startAt = performance.now() + DELAY;
-		const tick = (now: number) => {
-			if (now < startAt) {
-				rafRef.current = requestAnimationFrame(tick);
-				return;
-			}
-			const t = Math.min((now - startAt) / DURATION, 1);
-			const eased = 1 - Math.pow(1 - t, 3);
-			setVal(Math.round(eased * to));
-			if (t < 1) rafRef.current = requestAnimationFrame(tick);
-		};
-		rafRef.current = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(rafRef.current);
-	}, [to, reduce]);
+		const id = window.setInterval(() => setTime(format()), 30_000);
+		return () => window.clearInterval(id);
+	}, []);
 
+	return <span className="tabular-nums">{time}</span>;
+}
+
+const facts: [string, React.ReactNode][] = [
+	['Currently', 'Frontend Developer at Cross Africa'],
+	['Previously', 'Lead Frontend Developer at Flexwork'],
+	['Core stack', 'React · Next.js · TypeScript'],
+	[
+		'Based in',
+		<>
+			Lagos · <LocalTime /> WAT
+		</>,
+	],
+];
+
+function Portrait() {
 	return (
-		<span>
-			{val}
-			{suffix}
-		</span>
+		<motion.figure
+			initial={{ opacity: 0, clipPath: 'inset(12% 0% 0% 0% round 20px)' }}
+			animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0% round 20px)' }}
+			transition={{ duration: 1.2, delay: 0.35, ease }}
+			className="group relative overflow-hidden rounded-[20px] border border-line-strong bg-panel shadow-[var(--shadow)]"
+		>
+			<div className="overflow-hidden">
+				<motion.img
+					src={profile.photo}
+					alt={`Portrait of ${profile.name} at a desk in a bright office`}
+					width={960}
+					height={960}
+					fetchPriority="high"
+					initial={{ scale: 1.12 }}
+					animate={{ scale: 1 }}
+					transition={{ duration: 1.6, delay: 0.35, ease }}
+					className="aspect-[4/3] w-full object-cover object-[55%_22%] sm:aspect-[4/5]"
+				/>
+			</div>
+			{/* Bottom fade so the caption stays legible over the bright desk. */}
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
+			/>
+			<figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 text-white">
+				<span>
+					<span className="block text-[15px] font-medium tracking-[-0.01em]">
+						{profile.name}
+					</span>
+					<span className="block font-mono text-[11px] text-white/75">
+						{profile.role} · Lagos
+					</span>
+				</span>
+				<span className="inline-flex flex-none items-center gap-1.5 whitespace-nowrap rounded-full bg-white/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] backdrop-blur-md">
+					<span className="h-1.5 w-1.5 rounded-full bg-[#4ade80]" />
+					Open to work
+				</span>
+			</figcaption>
+		</motion.figure>
 	);
 }
 
-const stats = [
-	{ value: 5, suffix: '+', label: 'Years building' },
-	{ value: 40, suffix: '+', label: 'Projects shipped' },
-	{ value: 20, suffix: '+', label: 'Clients served' },
-];
-
-const specs: [string, React.ReactNode][] = [
-	['Role', 'Frontend Developer'],
-	['Stack', 'React · Next.js · React Native · TS'],
-	['Focus', 'Performance & scalability'],
-	['Based', 'Lagos, Nigeria · UTC+1'],
-];
-
-const ease = [0.22, 1, 0.36, 1] as const;
-
 export function HeroSection() {
-	const scrambled = useScramble('Frontend Developer', 600);
-	const reduce = useReducedMotion();
-
 	return (
 		<section
-			id="profile"
-			className="hero-section relative min-h-screen flex items-center pt-28 pb-20"
-			style={{ background: 'var(--ed-surface)' }}
+			id="top"
+			className="relative isolate overflow-hidden pb-16 pt-28 md:pb-24 md:pt-40"
 		>
-			<div className="hero-dot-grid" />
-			<div className="hero-noise" />
+			{/* Soft, low-contrast backdrop: a faint grid that fades out from the top. */}
 			<div
-				className="absolute pointer-events-none"
+				aria-hidden="true"
+				className="pointer-events-none absolute inset-0 -z-10 opacity-60"
 				style={{
-					top: '-10%',
-					left: '-5%',
-					width: 620,
-					height: 620,
-					borderRadius: '50%',
-					filter: 'blur(120px)',
-					background:
-						'radial-gradient(circle, rgba(91,157,249,0.12) 0%, transparent 70%)',
+					backgroundImage:
+						'linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px)',
+					backgroundSize: '72px 72px',
+					maskImage:
+						'radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%)',
+					WebkitMaskImage:
+						'radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%)',
 				}}
 			/>
 
-			<div className="ed-container w-full z-10">
-				<div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-					{/* ── Left: editorial intro ── */}
-					<div className="lg:col-span-7 min-w-0">
-						<motion.div
-							initial={{ opacity: 0, y: 14 }}
+			<div className="container-site">
+				<div className="grid items-end gap-12 lg:grid-cols-12 lg:gap-10">
+					<div className="lg:col-span-8">
+						<motion.a
+							href="#contact"
+							initial={{ opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.6, ease }}
-							className="inline-flex items-center gap-2.5 mb-8 px-4 py-2 rounded-full"
-							style={{
-								background: 'rgba(34,197,94,0.08)',
-								border: '1px solid rgba(34,197,94,0.22)',
-							}}
+							className="mb-10 inline-flex items-center gap-2.5 rounded-full border border-line-strong py-1.5 pl-3 pr-4 text-[13px] text-fg-muted transition-colors hover:border-fg hover:text-fg"
 						>
-							<motion.span
-								className="w-2 h-2 rounded-full"
-								style={{ background: '#4ade80' }}
-								animate={reduce ? {} : { scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
-								transition={{ duration: 2, repeat: Infinity }}
-							/>
-							<span
-								className="ed-mono"
-								style={{
-									fontSize: 11,
-									letterSpacing: '0.18em',
-									color: '#86efac',
-									textTransform: 'uppercase',
-								}}
-							>
-								Open to opportunities
+							<span className="relative flex h-2 w-2">
+								<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60 motion-reduce:hidden" />
+								<span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
 							</span>
-						</motion.div>
+							Available for new projects &amp; roles
+						</motion.a>
 
-						<p className="ed-label mb-4">Hi there, I&apos;m</p>
-
-						<motion.h1
-							className="ed-display"
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.7, ease }}
-						>
-							Olowosuyi
-							<br />
-							<span className="ed-name-accent">Temitope</span>
-						</motion.h1>
-
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ delay: 0.25, duration: 0.5 }}
-							className="flex items-center gap-3 mt-7"
-						>
-							<span
-								style={{
-									width: 34,
-									height: 2,
-									borderRadius: 2,
-									background:
-										'linear-gradient(90deg, var(--ed-accent), transparent)',
-								}}
-							/>
-							<span
-								className="ed-mono text-lg md:text-xl"
-								style={{ color: 'var(--ed-accent)', letterSpacing: '0.06em' }}
-							>
-								{scrambled || ' '}
+						<h1 className="text-[clamp(2.5rem,5.6vw,5.25rem)] font-medium leading-[0.98] tracking-[-0.045em]">
+							<span className="sr-only">
+								{headline.join(' ').replace(/\*/g, '')}
 							</span>
-						</motion.div>
+							<span aria-hidden="true">
+								{headline.map((word, i) => {
+									const italic = word.startsWith('*');
+									return (
+										<span
+											key={i}
+											className="inline-block overflow-hidden pb-[0.08em] align-bottom"
+										>
+											<motion.span
+												className={`inline-block ${
+													italic
+														? 'font-serif font-normal italic tracking-[-0.02em] text-brand'
+														: ''
+												}`}
+												initial={{ y: '105%' }}
+												animate={{ y: 0 }}
+												transition={{
+													duration: 0.9,
+													delay: 0.1 + i * 0.045,
+													ease,
+												}}
+											>
+												{word.replace(/\*/g, '')}
+											</motion.span>
+											{' '}
+										</span>
+									);
+								})}
+							</span>
+						</h1>
 
 						<motion.p
-							initial={{ opacity: 0, y: 12 }}
+							initial={{ opacity: 0, y: 16 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.35, duration: 0.6 }}
-							className="ed-lead mt-7 max-w-xl"
+							transition={{ duration: 0.8, delay: 0.65, ease }}
+							className="mt-10 max-w-xl text-pretty text-lg leading-relaxed text-fg-muted md:text-xl"
 						>
-							I design and engineer{' '}
-							<span style={{ color: 'var(--ed-text-hi)', fontWeight: 600 }}>
-								production-grade web and mobile systems
-							</span>{' '}
-							with React, Next.js, React Native and TypeScript — built for
-							performance, accessibility and scale.
+							I&apos;m Temitope — a frontend engineer with 3+
+							years shipping React, Next.js and TypeScript
+							products for logistics, fintech and SaaS teams. I
+							care about the details users feel: speed, clarity
+							and interfaces that hold up under real data.
 						</motion.p>
 
 						<motion.div
-							initial={{ opacity: 0, y: 12 }}
+							initial={{ opacity: 0, y: 16 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.45, duration: 0.6 }}
-							className="flex flex-col sm:flex-row gap-3 mt-9"
+							transition={{ duration: 0.8, delay: 0.75, ease }}
+							className="mt-10 flex flex-wrap gap-3"
 						>
-							<a href="#projects" className="ed-btn ed-btn-primary">
-								View my work
-								<ArrowRight className="w-4 h-4" />
+							<a href="#work" className="btn-primary group">
+								See selected work
+								<ArrowDown className="h-4 w-4 transition-transform duration-300 group-hover:translate-y-0.5" />
 							</a>
-							<a href={cv} download className="ed-btn ed-btn-ghost">
-								<Download className="w-4 h-4" />
-								Download CV
-							</a>
-						</motion.div>
-
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ delay: 0.6, duration: 0.6 }}
-							className="flex items-center gap-4 mt-7"
-						>
-							<a
-								href="https://github.com/Topsurpass"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="GitHub profile"
-								className="ed-social-icon"
-							>
-								<Github className="w-[18px] h-[18px]" />
-							</a>
-							<a
-								href="https://linkedin.com/in/temitope-olowosuyi"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="LinkedIn profile"
-								className="ed-social-icon"
-							>
-								<Linkedin className="w-[18px] h-[18px]" />
+							<a href="#contact" className="btn-secondary group">
+								Start a conversation
+								<ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
 							</a>
 						</motion.div>
 					</div>
 
-					{/* ── Right: editorial spec sheet ── */}
-					<motion.aside
-						initial={{ opacity: 0, y: 24 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.3, duration: 0.7, ease }}
-						className="lg:col-span-5 min-w-0"
-						aria-label="At a glance"
-					>
-						<div
-							className="rounded-2xl overflow-hidden"
-							style={{
-								background: 'var(--ed-raised)',
-								border: '1px solid var(--ed-line)',
-								backdropFilter: 'blur(10px)',
-							}}
-						>
-							<div
-								className="flex items-center justify-between px-5 py-3"
-								style={{ borderBottom: '1px solid var(--ed-line)' }}
-							>
-								<span className="ed-label">Profile</span>
-								<span
-									className="ed-mono"
-									style={{ fontSize: 10, color: '#86efac', letterSpacing: '0.12em' }}
-								>
-									● AVAILABLE
-								</span>
-							</div>
-
-							<dl className="px-5 py-2">
-								{specs.map(([k, v]) => (
-									<div
-										key={k}
-										className="flex items-start justify-between gap-4 py-3"
-										style={{ borderBottom: '1px solid var(--ed-line)' }}
-									>
-										<dt className="ed-label" style={{ paddingTop: 2 }}>
-											{k}
-										</dt>
-										<dd
-											className="ed-mono text-right"
-											style={{ fontSize: 13, color: 'var(--ed-text)' }}
-										>
-											{v}
-										</dd>
-									</div>
-								))}
-							</dl>
-
-							<div className="grid grid-cols-3">
-								{stats.map((s) => (
-									<div
-										key={s.label}
-										className="px-3 py-5 text-center"
-										style={{ borderRight: '1px solid var(--ed-line)' }}
-									>
-										<p
-											className="font-extrabold"
-											style={{
-												fontFamily: "'Syne', sans-serif",
-												fontSize: '1.6rem',
-												color: 'var(--ed-text-hi)',
-												lineHeight: 1,
-												fontVariantNumeric: 'tabular-nums',
-											}}
-										>
-											<Counter to={s.value} suffix={s.suffix} />
-										</p>
-										<p
-											className="ed-mono mt-1.5"
-											style={{
-												fontSize: 9,
-												letterSpacing: '0.1em',
-												color: 'var(--ed-text-dim)',
-												textTransform: 'uppercase',
-											}}
-										>
-											{s.label}
-										</p>
-									</div>
-								))}
-							</div>
-						</div>
-					</motion.aside>
+					<div className="mx-auto w-full max-w-md lg:col-span-4 lg:max-w-none">
+						<Portrait />
+					</div>
 				</div>
+
+				<motion.dl
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ duration: 1, delay: 0.9 }}
+					className="mt-20 grid grid-cols-2 border-t border-line md:mt-24 md:grid-cols-4"
+				>
+					{facts.map(([label, value], i) => (
+						<div
+							key={label}
+							className={`border-line py-5 pr-4 ${i % 2 === 1 ? 'pl-4 md:pl-0' : ''} ${
+								i < 2 ? 'border-b md:border-b-0' : ''
+							} ${i % 2 === 0 ? 'border-r md:border-r-0' : ''}`}
+						>
+							<dt className="eyebrow mb-2">{label}</dt>
+							<dd className="text-[15px] leading-snug">
+								{value}
+							</dd>
+						</div>
+					))}
+				</motion.dl>
 			</div>
 		</section>
 	);
