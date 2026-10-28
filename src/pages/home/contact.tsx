@@ -1,17 +1,7 @@
-import { motion } from 'framer-motion';
 import { useState } from 'react';
-import {
-	Mail,
-	Phone,
-	MapPin,
-	Github,
-	Linkedin,
-	ArrowUpRight,
-	Send,
-	CheckCircle2,
-	Loader2,
-} from 'lucide-react';
-import { SectionHeading } from '@/components/section-heading';
+import { ArrowUp, ArrowUpRight, Check, Copy, Loader2 } from 'lucide-react';
+import { profile } from '@/data';
+import { Reveal } from '@/components/reveal';
 
 // Set VITE_FORMSPREE_ENDPOINT in your .env to a free Formspree form
 // (https://formspree.io) to receive submissions. Until then the form falls
@@ -19,48 +9,6 @@ import { SectionHeading } from '@/components/section-heading';
 const FORM_ENDPOINT = import.meta.env.VITE_FORMSPREE_ENDPOINT as
 	| string
 	| undefined;
-const EMAIL = 'temitopeabiodun685@gmail.com';
-
-const ease = [0.22, 1, 0.36, 1] as const;
-
-const directLinks = [
-	{
-		icon: <Mail className="w-[18px] h-[18px]" />,
-		label: 'Email',
-		value: EMAIL,
-		href: `mailto:${EMAIL}`,
-		accent: '#5b9df9',
-	},
-	{
-		icon: <Phone className="w-[18px] h-[18px]" />,
-		label: 'Phone',
-		value: '+234 810 730 4148',
-		href: 'tel:+2348107304148',
-		accent: '#68D391',
-	},
-	{
-		icon: <MapPin className="w-[18px] h-[18px]" />,
-		label: 'Location',
-		value: 'Lagos, Nigeria',
-		href: undefined,
-		accent: '#FC8181',
-	},
-];
-
-const socials = [
-	{
-		icon: <Linkedin className="w-[18px] h-[18px]" />,
-		label: 'LinkedIn',
-		href: 'https://linkedin.com/in/temitope-olowosuyi',
-		accent: '#60A5FA',
-	},
-	{
-		icon: <Github className="w-[18px] h-[18px]" />,
-		label: 'GitHub',
-		href: 'https://github.com/Topsurpass',
-		accent: '#CBD5E1',
-	},
-];
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 type Errors = { name?: string; email?: string; message?: string };
@@ -71,12 +19,73 @@ function validate(v: { name: string; email: string; message: string }): Errors {
 	if (!v.email.trim()) errs.email = 'Please enter your email.';
 	else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))
 		errs.email = 'Enter a valid email address.';
-	if (!v.message.trim() || v.message.trim().length < 10)
+	if (v.message.trim().length < 10)
 		errs.message = 'Tell me a little more (10+ characters).';
 	return errs;
 }
 
-export function ContactSection() {
+const channels = [
+	{ label: 'LinkedIn', href: profile.linkedin },
+	{ label: 'GitHub', href: profile.github },
+	{ label: 'Résumé', href: profile.cv },
+];
+
+function CopyEmail() {
+	const [copied, setCopied] = useState(false);
+
+	async function copy() {
+		try {
+			await navigator.clipboard.writeText(profile.email);
+			setCopied(true);
+			window.setTimeout(() => setCopied(false), 2000);
+		} catch {
+			window.location.href = `mailto:${profile.email}`;
+		}
+	}
+
+	return (
+		<button
+			type="button"
+			onClick={copy}
+			className="inline-flex items-center gap-1.5 rounded-full border border-line-strong px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-fg hover:text-fg"
+		>
+			{copied ? (
+				<Check className="h-3.5 w-3.5 text-brand" />
+			) : (
+				<Copy className="h-3.5 w-3.5" />
+			)}
+			<span aria-live="polite">{copied ? 'Copied' : 'Copy email'}</span>
+		</button>
+	);
+}
+
+function Field({
+	id,
+	label,
+	error,
+	children,
+}: {
+	id: string;
+	label: string;
+	error?: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div>
+			<label htmlFor={id} className="mb-2 block text-sm text-fg-muted">
+				{label}
+			</label>
+			{children}
+			{error && (
+				<p id={`${id}-err`} className="mt-1.5 text-xs text-brand">
+					{error}
+				</p>
+			)}
+		</div>
+	);
+}
+
+function ContactForm() {
 	const [status, setStatus] = useState<Status>('idle');
 	const [errors, setErrors] = useState<Errors>({});
 
@@ -96,8 +105,8 @@ export function ContactSection() {
 
 		// No backend configured → fall back to the visitor's mail client.
 		if (!FORM_ENDPOINT) {
-			window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(
-				`Portfolio enquiry from ${values.name}`
+			window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(
+				`Project enquiry from ${values.name}`
 			)}&body=${encodeURIComponent(values.message)}`;
 			return;
 		}
@@ -109,248 +118,220 @@ export function ContactSection() {
 				body: fd,
 				headers: { Accept: 'application/json' },
 			});
-			if (res.ok) {
-				setStatus('success');
-				form.reset();
-			} else {
-				setStatus('error');
-			}
+			setStatus(res.ok ? 'success' : 'error');
+			if (res.ok) form.reset();
 		} catch {
 			setStatus('error');
 		}
 	}
 
+	if (status === 'success') {
+		return (
+			<div
+				role="status"
+				className="rounded-2xl border border-line-strong bg-panel p-8"
+			>
+				<Check className="h-6 w-6 text-brand" />
+				<p className="mt-6 text-2xl font-medium tracking-[-0.02em]">
+					Thanks — message received.
+				</p>
+				<p className="mt-2 text-fg-muted">
+					I&apos;ll get back to you within one working day.
+				</p>
+			</div>
+		);
+	}
+
+	return (
+		<form onSubmit={handleSubmit} noValidate className="space-y-5">
+			<div className="grid gap-5 sm:grid-cols-2">
+				<Field id="name" label="Name" error={errors.name}>
+					<input
+						id="name"
+						name="name"
+						type="text"
+						autoComplete="name"
+						className="field"
+						placeholder="Ada Lovelace"
+						aria-invalid={!!errors.name}
+						aria-describedby={errors.name ? 'name-err' : undefined}
+					/>
+				</Field>
+				<Field id="email" label="Email" error={errors.email}>
+					<input
+						id="email"
+						name="email"
+						type="email"
+						autoComplete="email"
+						className="field"
+						placeholder="you@company.com"
+						aria-invalid={!!errors.email}
+						aria-describedby={
+							errors.email ? 'email-err' : undefined
+						}
+					/>
+				</Field>
+			</div>
+			<Field
+				id="message"
+				label="What are you building?"
+				error={errors.message}
+			>
+				<textarea
+					id="message"
+					name="message"
+					rows={5}
+					className="field resize-y"
+					placeholder="A short note on the product, timeline and where I can help."
+					aria-invalid={!!errors.message}
+					aria-describedby={
+						errors.message ? 'message-err' : undefined
+					}
+				/>
+			</Field>
+
+			{status === 'error' && (
+				<p role="alert" className="text-sm text-brand">
+					Something went wrong. Please email me directly at{' '}
+					{profile.email}.
+				</p>
+			)}
+
+			<button
+				type="submit"
+				disabled={status === 'submitting'}
+				className="btn-primary w-full disabled:opacity-60 sm:w-auto"
+			>
+				{status === 'submitting' ? (
+					<>
+						<Loader2 className="h-4 w-4 animate-spin" />
+						Sending…
+					</>
+				) : (
+					<>
+						Send message
+						<ArrowUpRight className="h-4 w-4" />
+					</>
+				)}
+			</button>
+		</form>
+	);
+}
+
+export function ContactSection() {
 	return (
 		<section
 			id="contact"
-			className="contact-section py-28 relative z-10"
-			style={{ background: 'var(--ed-surface)' }}
+			className="border-t border-line pb-10 pt-24 md:pt-36"
 		>
-			<div className="contact-grid-bg" />
-			<div className="contact-radial-glow" />
+			<div className="container-site">
+				<Reveal className="flex items-center justify-between border-b border-line pb-4">
+					<span className="eyebrow">Contact</span>
+					<span className="eyebrow">Replies within a day</span>
+				</Reveal>
 
-			<div className="ed-container z-10">
-				<SectionHeading
-					index="04"
-					kicker="Contact"
-					title={
-						<>
-							Let&apos;s build{' '}
-							<span className="ed-name-accent">something</span>
-						</>
-					}
-					lead="Have a role, a project, or just a question? Send a note — I usually reply within a day."
-				/>
+				<div className="mt-12 grid gap-16 md:mt-16 lg:grid-cols-12">
+					<div className="lg:col-span-6">
+						<Reveal>
+							<h2 className="text-balance text-[clamp(2.4rem,5.5vw,4.5rem)] font-medium leading-[1] tracking-[-0.045em]">
+								Have a product that needs a{' '}
+								<span className="font-serif font-normal italic text-brand">
+									careful
+								</span>{' '}
+								frontend?
+							</h2>
+						</Reveal>
+						<Reveal delay={0.08}>
+							<p className="mt-8 max-w-md text-pretty text-lg leading-relaxed text-fg-muted">
+								I&apos;m open to freelance projects, contract
+								work and full-time frontend roles — remote or in
+								Lagos.
+							</p>
+						</Reveal>
 
-				<div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 mt-12">
-					{/* ── Form ── */}
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true, margin: '-80px' }}
-						transition={{ duration: 0.6, ease }}
-					>
-						{status === 'success' ? (
-							<div
-								role="status"
-								className="flex flex-col items-start gap-4 rounded-2xl p-8"
-								style={{
-									background: 'var(--ed-raised)',
-									border: '1px solid rgba(104,211,145,0.3)',
-								}}
-							>
-								<CheckCircle2 className="w-10 h-10" style={{ color: '#68D391' }} />
-								<h3
-									className="font-bold"
-									style={{
-										fontFamily: "'Syne', sans-serif",
-										fontSize: '1.4rem',
-										color: 'var(--ed-text-hi)',
-									}}
-								>
-									Message sent — thank you!
-								</h3>
-								<p className="ed-body">
-									I&apos;ve got your message and will get back to you shortly.
-								</p>
-							</div>
-						) : (
-							<form onSubmit={handleSubmit} noValidate className="space-y-5">
-								<div className="grid sm:grid-cols-2 gap-5">
-									<div>
-										<label htmlFor="name" className="ed-label block mb-2">
-											Name
-										</label>
-										<input
-											id="name"
-											name="name"
-											type="text"
-											autoComplete="name"
-											className="ed-field"
-											placeholder="Your name"
-											aria-invalid={!!errors.name}
-											aria-describedby={errors.name ? 'name-err' : undefined}
-										/>
-										{errors.name && (
-											<p id="name-err" className="ed-mono mt-1.5" style={errStyle}>
-												{errors.name}
-											</p>
-										)}
-									</div>
-									<div>
-										<label htmlFor="email" className="ed-label block mb-2">
-											Email
-										</label>
-										<input
-											id="email"
-											name="email"
-											type="email"
-											autoComplete="email"
-											className="ed-field"
-											placeholder="you@company.com"
-											aria-invalid={!!errors.email}
-											aria-describedby={errors.email ? 'email-err' : undefined}
-										/>
-										{errors.email && (
-											<p id="email-err" className="ed-mono mt-1.5" style={errStyle}>
-												{errors.email}
-											</p>
-										)}
-									</div>
-								</div>
-
-								<div>
-									<label htmlFor="message" className="ed-label block mb-2">
-										Message
-									</label>
-									<textarea
-										id="message"
-										name="message"
-										rows={5}
-										className="ed-field resize-y"
-										placeholder="Tell me about the role or project…"
-										aria-invalid={!!errors.message}
-										aria-describedby={errors.message ? 'message-err' : undefined}
+						<Reveal delay={0.14} className="mt-12 space-y-6">
+							<div className="flex items-center gap-4">
+								<span className="h-14 w-14 flex-none overflow-hidden rounded-full border border-line-strong">
+									<img
+										src={profile.photo}
+										alt=""
+										width={56}
+										height={56}
+										loading="lazy"
+										className="h-full w-full origin-[51%_26%] scale-[2.2] object-cover"
 									/>
-									{errors.message && (
-										<p id="message-err" className="ed-mono mt-1.5" style={errStyle}>
-											{errors.message}
-										</p>
-									)}
-								</div>
-
-								{status === 'error' && (
-									<p role="alert" className="ed-mono" style={errStyle}>
-										Something went wrong sending your message. Please email me
-										directly at {EMAIL}.
+								</span>
+								<div>
+									<p className="font-medium">
+										{profile.name}
 									</p>
-								)}
-
-								<button
-									type="submit"
-									disabled={status === 'submitting'}
-									className="ed-btn ed-btn-primary w-full sm:w-auto disabled:opacity-60"
-								>
-									{status === 'submitting' ? (
-										<>
-											<Loader2 className="w-4 h-4 animate-spin" />
-											Sending…
-										</>
-									) : (
-										<>
-											<Send className="w-4 h-4" />
-											Send message
-										</>
-									)}
-								</button>
-							</form>
-						)}
-					</motion.div>
-
-					{/* ── Direct contact ── */}
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true, margin: '-80px' }}
-						transition={{ delay: 0.1, duration: 0.6, ease }}
-						className="space-y-3"
-					>
-						{directLinks.map((m) => {
-							const inner = (
-								<div className="flex items-center gap-4 rounded-2xl p-4 ed-contact-row">
-									<span
-										className="flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0"
-										style={{
-											background: `${m.accent}15`,
-											border: `1px solid ${m.accent}30`,
-											color: m.accent,
-										}}
-									>
-										{m.icon}
-									</span>
-									<span>
-										<span className="ed-label block">{m.label}</span>
-										<span
-											style={{
-												color: 'var(--ed-text-hi)',
-												fontSize: 14,
-												fontWeight: 600,
-											}}
-										>
-											{m.value}
-										</span>
-									</span>
+									<p className="text-sm text-fg-muted">
+										You&apos;ll be talking to me directly —
+										no agency, no handoff.
+									</p>
 								</div>
-							);
-							return m.href ? (
-								<a key={m.label} href={m.href} className="block">
-									{inner}
-								</a>
-							) : (
-								<div key={m.label}>{inner}</div>
-							);
-						})}
-
-						<div className="flex gap-3 pt-2">
-							{socials.map((s) => (
+							</div>
+							<div>
+								<p className="eyebrow mb-3">Email</p>
+								<div className="flex flex-wrap items-center gap-4">
+									<a
+										href={`mailto:${profile.email}`}
+										className="link-underline break-all text-xl font-medium tracking-[-0.02em] sm:text-2xl"
+									>
+										{profile.email}
+									</a>
+									<CopyEmail />
+								</div>
+							</div>
+							<div>
+								<p className="eyebrow mb-3">Phone</p>
 								<a
-									key={s.label}
-									href={s.href}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 px-4 py-2.5 rounded-xl ed-contact-row"
-									style={{ fontSize: 13 }}
+									href={profile.phoneHref}
+									className="link-underline text-lg"
 								>
-									<span style={{ color: s.accent }}>{s.icon}</span>
-									<span style={{ color: 'var(--ed-text)' }}>{s.label}</span>
-									<ArrowUpRight className="w-3.5 h-3.5 opacity-50" />
+									{profile.phone}
 								</a>
-							))}
-						</div>
-					</motion.div>
+							</div>
+							<ul className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
+								{channels.map((c) => (
+									<li key={c.label}>
+										<a
+											href={c.href}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="link-underline inline-flex items-center gap-1 text-fg-muted hover:text-fg"
+										>
+											{c.label}
+											<ArrowUpRight className="h-3.5 w-3.5" />
+										</a>
+									</li>
+								))}
+							</ul>
+						</Reveal>
+					</div>
+
+					<Reveal
+						delay={0.1}
+						className="lg:col-span-5 lg:col-start-8"
+					>
+						<ContactForm />
+					</Reveal>
 				</div>
 
-				<motion.div
-					className="divider-line mt-20 mb-8"
-					initial={{ scaleX: 0 }}
-					whileInView={{ scaleX: 1 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.8 }}
-				/>
-				<p
-					className="ed-mono text-center"
-					style={{ fontSize: 12, color: 'var(--ed-text-dim)', letterSpacing: '0.05em' }}
-				>
-					© {new Date().getFullYear()} · Olowosuyi Temitope · Crafted with care in
-					Lagos, Nigeria
-				</p>
+				<footer className="mt-28 flex flex-col gap-4 border-t border-line pt-8 text-sm text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
+					<p>
+						© {new Date().getFullYear()} {profile.name}. Designed
+						&amp; built in {profile.location}.
+					</p>
+					<a
+						href="#top"
+						className="inline-flex items-center gap-1.5 transition-colors hover:text-fg"
+					>
+						Back to top
+						<ArrowUp className="h-3.5 w-3.5" />
+					</a>
+				</footer>
 			</div>
 		</section>
 	);
 }
-
-const errStyle: React.CSSProperties = {
-	fontSize: 11,
-	color: '#fca5a5',
-	letterSpacing: '0.02em',
-};

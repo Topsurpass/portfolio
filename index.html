@@ -2,25 +2,54 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="icon" type="image/svg+xml" href="/logo2.svg" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+		<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="theme-color" content="#070b12" />
+		<meta
+			name="theme-color"
+			content="#fafaf9"
+			media="(prefers-color-scheme: light)"
+		/>
+		<meta
+			name="theme-color"
+			content="#0a0a0b"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta name="color-scheme" content="light dark" />
+		<title>Temitope Olowosuyi — Frontend Engineer</title>
 		<meta
 			name="description"
-			content="Olowosuyi Temitope — Frontend Developer building production-grade web and mobile systems with React, Next.js, React Native and TypeScript."
+			content="Temitope Olowosuyi is a Frontend Engineer in Lagos building fast, dependable React, Next.js and TypeScript applications for fintech, logistics and SaaS teams."
 		/>
-		<title>Olowosuyi Temitope — Frontend Developer</title>
+		<meta
+			property="og:title"
+			content="Temitope Olowosuyi — Frontend Engineer"
+		/>
+		<meta
+			property="og:description"
+			content="React, Next.js and TypeScript engineer building dashboards, product interfaces and data-heavy web apps."
+		/>
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="/work/fraud-analyzer.jpg" />
 
-		<!-- Fonts: preconnect + single stylesheet with display=swap -->
+		<!-- Apply the saved theme before first paint to avoid a flash. -->
+		<script>
+			(function () {
+				try {
+					var t = localStorage.getItem('theme');
+					if (t === 'light' || t === 'dark')
+						document.documentElement.setAttribute('data-theme', t);
+				} catch (e) {}
+			})();
+		</script>
+
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link
-			rel="preconnect"
-			href="https://fonts.gstatic.com"
-			crossorigin
-		/>
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
 			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
 		/>
 	</head>
 	<body>

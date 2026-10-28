@@ -1,22 +1,29 @@
-import React from 'react';
 import { useRouteError } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
-const ErrorPage: React.FC = () => {
-	const error = useRouteError() as any;
+export default function ErrorPage() {
+	const error = useRouteError() as
+		| { statusText?: string; message?: string }
+		| undefined;
 
 	return (
-		<div className="flex flex-col items-center justify-center text-center px-6  h-screen">
-			<AlertCircle size={50} className="text-red-500 mb-6" />
-
-			<h1 className="text-5xl font-extrabold text-red-500">404</h1>
-			<p className="text-lg mt-4">
+		<main className="container-site flex min-h-screen flex-col justify-center">
+			<p className="eyebrow">Error 404</p>
+			<h1 className="mt-6 max-w-[14ch] text-[clamp(2.5rem,7vw,5.5rem)] font-medium leading-[1] tracking-[-0.045em]">
+				This page{' '}
+				<span className="font-serif font-normal italic text-brand">
+					doesn&apos;t exist.
+				</span>
+			</h1>
+			<p className="mt-6 max-w-md text-lg text-fg-muted">
 				{error?.statusText ||
 					error?.message ||
-					"The page you were looking for doesn't exist / is yet to be created."}
+					'The link may be broken, or the page may have moved.'}
 			</p>
-		</div>
+			<a href="/" className="btn-secondary mt-10 self-start">
+				<ArrowLeft className="h-4 w-4" />
+				Back home
+			</a>
+		</main>
 	);
-};
-
-export default ErrorPage;
+}
